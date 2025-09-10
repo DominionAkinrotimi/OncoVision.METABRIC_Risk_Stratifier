@@ -149,21 +149,44 @@ graph TD
 
 ```
 OncoVision/
-├── data/
+├── (not updated yet) data/
 │   ├── metabric_processed_clean.csv      # Cleaned dataset
 │   └── feature_importances.csv           # Feature importance scores
-├── models/
+├── (not updated yet) models/
 │   ├── best_model_random_forest.pkl      # Trained model
 │   └── label_encoders.pkl                # Preprocessing encoders
-├── notebooks/
+├── (not updated yet) notebooks/
 │   ├── 01_data_preprocessing.ipynb       # Data cleaning & EDA
 │   ├── 02_model_training.ipynb           # Model development
 │   └── 03_results_analysis.ipynb         # Performance evaluation
 ├── streamlit_app.py                      # Main application
 ├── requirements.txt                      # Dependencies
-└── README.md                             # This file
+├── README.md                             # This file
+└── train_model.py                        #see details belo
 ```
+## Model Weights
 
+The trained model file (`best_model_random_forest.pkl`) is not included in this repository due to its size (~770 MB).
+
+**To generate the model locally:**
+
+1.  Ensure you have all dependencies installed:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+2.  Run the training script. This will train the model and save the file locally.
+    ```bash
+    python train_model.py
+    ```
+    *Training takes approximately 5-10 minutes on a standard CPU.*
+
+3.  Once the model is trained, you can run the Streamlit app:
+    ```bash
+    streamlit run streamlit_app.py
+    ```
+
+---
 ## 🔬 Methodology
 
 ### Data Source
