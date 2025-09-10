@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.49.1-FF4B4B)
 ![Scikit-Survival](https://img.shields.io/badge/Scikit--Survival-0.22.0-orange)
-![License](https://img.shields.io/badge/License-Apache-2.0-green)
+![License](https://img.shields.io/badge/License--Apache-2.0-green)
 
 An AI-powered clinical decision support system for breast cancer survival prediction, built on the METABRIC dataset using advanced machine learning techniques.
 
