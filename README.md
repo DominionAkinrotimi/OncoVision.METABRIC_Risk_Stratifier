@@ -246,8 +246,7 @@ The model successfully recapitulates known prognostic factors:
 - Patient counseling and education
 
 ## 📋 Example Usage
-
-![Example Prediction](https://via.placeholder.com/700x500.png?text=Example+Risk+Prediction)
+<img width="1798" height="769" alt="image" src="https://github.com/user-attachments/assets/236c15f1-3b86-4709-8f38-1e08deabf409" />
 *Sample patient assessment with risk score*
 
 ```python
