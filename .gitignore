@@ -1,5 +1,23 @@
 .streamlit/secrets.toml
 
+# .gitignore
+
+# Ignore large model files
+*.pkl
+*.joblib
+*.h5
+*.pth
+*.model
+
+# Ignore the saved data if it's large
+metabric_processed_clean.csv
+
+# Ignore any other large files
+*.zip
+*.rar
+*.7z
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
