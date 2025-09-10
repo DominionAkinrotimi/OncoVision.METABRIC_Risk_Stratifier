@@ -23,7 +23,8 @@ An AI-powered clinical decision support system for breast cancer survival predic
 | CoxPH | 0.6827 | 0.80s |
 
 ### Feature Importance Analysis
-![Feature Importance](https://via.placeholder.com/600x400.png?text=Feature+Importance+Plot)
+<img width="1389" height="989" alt="image" src="https://github.com/user-attachments/assets/f74dc4e5-3f32-4f8b-a7b1-690a7d0b078a" />
+
 *Top predictive features from Random Survival Forest*
 
 1. **Age at Diagnosis** (0.0334) - Primary risk factor
@@ -33,7 +34,8 @@ An AI-powered clinical decision support system for breast cancer survival predic
 5. **PAM50 + Claudin-low Subtype** (0.0091) - Molecular classification
 
 ### Risk Stratification Results
-![Risk Stratification](https://via.placeholder.com/700x400.png?text=Kaplan-Meier+Risk+Stratification)
+<img width="1189" height="790" alt="image" src="https://github.com/user-attachments/assets/00eff079-594f-440e-bd1e-8494f54358fb" />
+
 *Clear separation of survival curves by risk group*
 
 | Risk Group | Patients | Event Rate | Median Survival |
@@ -41,7 +43,7 @@ An AI-powered clinical decision support system for breast cancer survival predic
 | **Low Risk** | 167 | 35.9% | 143.0 months |
 | **Medium Risk** | 167 | 74.3% | 97.9 months |
 | **High Risk** | 168 | 87.5% | 96.6 months |
-```
+
 
 ## 🚀 Quick Start
 
@@ -71,7 +73,76 @@ streamlit run streamlit_app.py
 ```
 
 ### Data Processing Pipeline
-![Data Processing Pipeline](https://via.placeholder.com/800x200.png?text=Data+Processing+Pipeline)
+```mermaid
+graph TD
+    A[📦 Raw METABRIC Dataset<br/>n=2,509 patients, 34 features] --> B[🔍 Data Assessment];
+    
+    B --> C[❓ Missing Value Analysis];
+    C --> D[Initial: 10,000+ missing values];
+    
+    D --> E[🔄 Multi-Stage Imputation];
+    
+    subgraph E [Clinical Logic Imputation]
+        E1[1. Event & Duration Columns];
+        E2[2. Biomarker Status];
+        E3[3. Therapy Columns];
+        E4[4. Other Clinical Features];
+        E5[5. Final Fallback];
+        
+        E1 -->|Group by Cancer Type| E1a[Mode/Mean Imputation];
+        E2 -->|Measurement technique| E2a[Status Imputation];
+        E3 -->|Treatment protocols| E3a[Therapy Imputation];
+        E4 -->|Clinical grouping| E4a[Advanced Imputation];
+        E5 -->|Column-level| E5a[Final Cleanup];
+    end
+    
+    E --> F[✅ Clean Dataset<br/>0 missing values];
+    
+    F --> G[🔤 Feature Encoding];
+    G --> H[Categorical → Numerical];
+    
+    H --> I[🎯 Target Variable Creation];
+    I --> J[Structured Array:<br/>event, time];
+    
+    J --> K[⚖️ Train-Test Split];
+    K --> L[80% Training<br/>n=2,007 patients];
+    K --> M[20% Testing<br/>n=502 patients];
+    
+    L --> N[🤖 Model Training];
+    M --> O[📊 Model Evaluation];
+    
+    N --> P[Random Survival Forest];
+    N --> Q[Gradient Boosting];
+    N --> R[Cox Models];
+    
+    O --> S[🎯 Performance Metrics];
+    S --> T[C-index: 0.7045];
+    S --> U[Risk Stratification];
+    S --> V[Feature Importance];
+    
+    T --> W[🚀 Streamlit App];
+    U --> W;
+    V --> W;
+    
+    W --> X[🌐 Web Interface];
+    W --> Y[📱 Clinical Tool];
+    W --> Z[🔬 Research Platform];
+
+    %% Styling
+    classDef raw fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef process fill:#fff3e0,stroke:#ff6f00,stroke-width:2px;
+    classDef clean fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px;
+    classDef model fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+    classDef result fill:#ffecb3,stroke:#ffa000,stroke-width:2px;
+    classDef final fill:#bbdefb,stroke:#1565c0,stroke-width:2px;
+    
+    class A raw;
+    class B,C,D,E process;
+    class F,G,H,I,J clean;
+    class K,L,M,N,O,P,Q,R model;
+    class S,T,U,V result;
+    class W,X,Y,Z final;
+```
 *From raw data to actionable insights*
 
 ## 🏗️ Architecture
