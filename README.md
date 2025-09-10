@@ -7,13 +7,12 @@
 
 An AI-powered clinical decision support system for breast cancer survival prediction, built on the METABRIC dataset using advanced machine learning techniques.
 
-![OncoVision Dashboard](https://via.placeholder.com/800x400.png?text=OncoVision+Dashboard+Screenshot)
-*Example: Replace with actual dashboard screenshot*
 
 ## 📊 Key Results & Performance
 
 ### Model Performance Comparison
-![Model Performance](https://via.placeholder.com/600x300.png?text=Model+Performance+Comparison+Chart)
+<img width="1487" height="589" alt="image" src="https://github.com/user-attachments/assets/c89e8b15-a889-4537-b42c-cc28ed597767" />
+
 *C-index scores across different algorithms*
 
 | Model | C-Index | Training Time |
