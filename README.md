@@ -212,9 +212,9 @@ The model successfully recapitulates known prognostic factors:
 
 ### Risk-Based Stratification
 <img width="1490" height="1189" alt="image" src="https://github.com/user-attachments/assets/bf2350e3-b7c7-4976-b63f-5a3eb0cfa891" />
-- **Low Risk**: Consider therapy de-escalation
-- **Medium Risk**: Standard guideline-concordant care  
-- **High Risk**: Aggressive multimodal therapy
+- Low Risk: Consider therapy de-escalation
+- Medium Risk: Standard guideline-concordant care  
+- High Risk: Aggressive multimodal therapy
 
 ### Decision Support
 - Treatment planning and personalization
