@@ -5,6 +5,7 @@ on the same training patients, so its risk groups are the ones whose survival
 is reported in results/risk_groups.csv.
 """
 
+import base64
 from pathlib import Path
 
 import numpy as np
@@ -37,6 +38,16 @@ model, oob_sorted, cuts, X_train = load()
 results = Path("results")
 group_stats = pd.read_csv(results / "risk_groups.csv").set_index("risk_group")
 bench = pd.read_csv(results / "benchmark.csv")
+
+
+def figure(container, name, caption):
+    # Embedded as data URIs: Streamlit Cloud's media endpoint returned HTTP 500
+    # for st.image files, so the figures are sent inline with the page instead.
+    data = base64.b64encode((results / "figures" / name).read_bytes()).decode()
+    container.markdown(
+        f"<figure style='margin:0'><img src='data:image/png;base64,{data}' style='width:100%'>"
+        f"<figcaption style='font-size:0.85rem;color:gray'>{caption}</figcaption></figure>",
+        unsafe_allow_html=True)
 
 st.title("OncoVision: breast cancer survival risk groups")
 st.caption("Research prototype built on the METABRIC cohort. Not a medical device and "
@@ -117,11 +128,10 @@ with tab_model:
                  hide_index=True)
     st.write("The model was chosen by 5-fold cross-validation on the training patients. "
              "Random Survival Forest and Gradient Boosting were effectively tied.")
-    st.image(str(results / "figures" / "risk_groups_km.png"),
-             caption="Survival of held-out test patients by risk group")
+    figure(st, "risk_groups_km.png", "Survival of held-out test patients by risk group")
     c1, c2 = st.columns(2)
-    c1.image(str(results / "figures" / "permutation_importance.png"), caption="Permutation importance")
-    c2.image(str(results / "figures" / "shap_beeswarm.png"), caption="SHAP values")
+    figure(c1, "permutation_importance.png", "Permutation importance (drop in test C-index)")
+    figure(c2, "shap_beeswarm.png", "SHAP values for 200 test patients")
     st.info("Treatment variables (surgery, radiotherapy, chemotherapy) reflect who received them, "
             "not their effect: sicker patients get more aggressive treatment. Do not read them as "
             "treatment advice.")
