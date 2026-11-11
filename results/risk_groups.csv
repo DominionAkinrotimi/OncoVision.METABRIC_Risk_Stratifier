@@ -1,0 +1,4 @@
+risk_group,patients,deaths,event_rate,median_survival_months,survival_5y,survival_10y
+Low,126,41,0.3254,256.8667,0.9524,0.8118
+Medium,139,79,0.5683,171.6333,0.7955,0.6388
+High,132,109,0.8258,85.7333,0.6122,0.32

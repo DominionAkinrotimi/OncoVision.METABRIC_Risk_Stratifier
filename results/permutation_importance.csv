@@ -1,0 +1,22 @@
+feature,importance_mean,importance_sd
+Age at Diagnosis,0.0458,0.0097
+Nottingham prognostic index,0.0237,0.0064
+Lymph nodes examined positive,0.0188,0.0048
+Tumor Size,0.0054,0.0042
+Pam50 + Claudin-low subtype,0.0047,0.0028
+HER2 status measured by SNP6,0.0032,0.0011
+PR Status,0.0024,0.001
+Tumor Stage,0.002,0.0033
+HER2 Status,0.0017,0.0009
+Type of Breast Surgery,0.0011,0.0018
+Neoplasm Histologic Grade,0.001,0.0011
+Radio Therapy,0.0009,0.0011
+ER Status,0.0009,0.0006
+Hormone Therapy,0.0008,0.0006
+3-Gene classifier subtype,0.0007,0.0011
+Mutation Count,0.0007,0.001
+Chemotherapy,0.0007,0.0004
+Cancer Type Detailed,0.0002,0.0004
+Cellularity,0.0002,0.0004
+Primary Tumor Laterality,0.0001,0.0009
+Inferred Menopausal State,-0.0004,0.0019

@@ -1,286 +1,90 @@
-# OncoVision: METABRIC Risk Stratifier 🧬
+# OncoVision: METABRIC Risk Stratifier
 
-![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.49.1-FF4B4B)
-![Scikit-Survival](https://img.shields.io/badge/Scikit--Survival-0.22.0-orange)
-![License](https://img.shields.io/badge/License-Apache--2.0-green)
+Survival models that sort breast cancer patients into low, medium and high risk of death, built on the METABRIC cohort, with a Streamlit app.
 
-An AI-powered clinical decision support system for breast cancer survival prediction, built on the METABRIC dataset using advanced machine learning techniques.
+**Research prototype. Not a medical device and not for treatment decisions.**
 
+## Results at a glance
 
-## 📊 Key Results & Performance
+- **Data:** 1,981 patients (1,144 deaths), 21 clinical features. 528 patients in the source file have no recorded survival outcome and were removed, not imputed.
+- **Best model:** Random Survival Forest, cross-validated C-index **0.686 ± 0.018**, held-out test C-index **0.691**. Gradient Boosting was effectively tied.
+- **Risk groups** on 397 held-out test patients: deaths during follow-up range from **32.5% (low) to 82.6% (high)**, and 10-year survival from 81% to 32% (log-rank p = 3 × 10⁻²²).
+- **Top predictors** (permutation importance and SHAP agree): age at diagnosis, Nottingham Prognostic Index, positive lymph nodes, tumour size.
 
-### Model Performance Comparison
-<img width="1487" height="589" alt="image" src="https://github.com/user-attachments/assets/c89e8b15-a889-4537-b42c-cc28ed597767" />
+## Benchmark
 
-*C-index scores across different algorithms*
+All models were scored with 5-fold cross-validation on the 1,584 training patients. The winner was picked on that score alone. The 397 test patients were used once, at the end.
 
-| Model | C-Index | Training Time |
-|-------|---------|---------------|
-| Random Survival Forest | **0.7045** | 6.24s |
-| Gradient Boosting Survival | 0.6913 | 3.68s |
-| CoxNet (ElasticNet) | 0.6839 | 0.04s |
-| CoxPH | 0.6827 | 0.80s |
+| Model | CV C-index (mean ± SD) | Test C-index | Test AUC 5 y | Test AUC 10 y |
+|---|---|---|---|---|
+| Random Survival Forest | **0.686 ± 0.018** | 0.691 | 0.741 | 0.742 |
+| Gradient Boosting Survival | 0.686 ± 0.014 | 0.692 | 0.740 | 0.749 |
+| CoxNet (elastic net) | 0.680 ± 0.015 | 0.668 | 0.690 | 0.711 |
+| CoxPH | 0.678 ± 0.014 | 0.664 | 0.688 | 0.707 |
 
-### Feature Importance Analysis
-<img width="1389" height="989" alt="image" src="https://github.com/user-attachments/assets/f74dc4e5-3f32-4f8b-a7b1-690a7d0b078a" />
+![Benchmark](results/figures/benchmark.png)
 
-*Top predictive features from Random Survival Forest*
+## Risk groups
 
-1. **Age at Diagnosis** (0.0334) - Primary risk factor
-2. **Nottingham Prognostic Index** (0.0327) - Validated clinical tool
-3. **Lymph Nodes Examined Positive** (0.0205) - Critical prognostic indicator
-4. **Type of Breast Surgery** (0.0118) - Treatment approach
-5. **PAM50 + Claudin-low Subtype** (0.0091) - Molecular classification
+Cut-offs are the thirds of the training patients' out-of-bag scores (each patient scored only by trees that never saw them). They were then applied unchanged to the test patients.
 
-### Risk Stratification Results
-<img width="1189" height="790" alt="image" src="https://github.com/user-attachments/assets/00eff079-594f-440e-bd1e-8494f54358fb" />
+| Risk group | Test patients | Died during follow-up | 5-year survival | 10-year survival | Median survival |
+|---|---|---|---|---|---|
+| Low | 126 | 32.5% | 95% | 81% | 257 months |
+| Medium | 139 | 56.8% | 80% | 64% | 172 months |
+| High | 132 | 82.6% | 61% | 32% | 86 months |
 
-*Clear separation of survival curves by risk group*
+![Kaplan-Meier curves by risk group](results/figures/risk_groups_km.png)
 
-| Risk Group | Patients | Event Rate | Median Survival |
-|------------|----------|------------|-----------------|
-| **Low Risk** | 167 | 35.9% | 143.0 months |
-| **Medium Risk** | 167 | 74.3% | 97.9 months |
-| **High Risk** | 168 | 87.5% | 96.6 months |
+## What drives the predictions
 
+| Permutation importance (test set) | SHAP (200 test patients) |
+|---|---|
+| ![Permutation importance](results/figures/permutation_importance.png) | ![SHAP](results/figures/shap_beeswarm.png) |
 
-## 🚀 Quick Start
+Older age, higher NPI, more positive nodes and larger tumours all push risk up, which matches clinical knowledge. Mastectomy pushes risk up and radiotherapy pushes it down. That reflects **who received** those treatments (sicker patients get more aggressive surgery), not what the treatments do, so the model must not be read as treatment advice.
 
-### Installation
+## Methods and the reasons behind them
+
+| Decision | Why |
+|---|---|
+| Drop the 528 patients with no survival outcome | Imputing the outcome would train and score the model on invented answers. |
+| Overall survival (death from any cause) as the endpoint | It is the outcome the data records for every patient. 497 of the 1,144 deaths were from other causes, so disease-specific survival would be a sensible next study. |
+| Drop 11 columns (see `EXCLUDED` in `oncovision.py`) | Relapse status and vital status restate the outcome (leakage); others are identifiers, duplicates, constant, or research-only labels a clinic would not have. |
+| Fill missing values **inside** the model pipeline (median / most common, plus missing flags for numbers) | The fill values are learned from training patients only, so nothing leaks from the test set. 1,258 feature values were missing. |
+| One-hot encode categories | Label-encoding categories such as cancer subtype as 0, 1, 2… imposes a false order on Cox models. |
+| Stratified 80/20 split by event, seed 42 | Keeps the death rate the same in both sets. |
+| Fixed hyperparameters, except CoxNet's penalty chosen by 5-fold CV on training data | Avoids tuning to the test set. |
+| Harrell's and Uno's C-index plus time-dependent AUC | C-index measures ranking; AUC at 5 and 10 years shows performance at clinically meaningful times. |
+
+## Limitations
+
+- One cohort, no external validation. Treatments and survival have changed since METABRIC patients were diagnosed (1977–2005).
+- C-index around 0.69 is moderate. The model ranks patients usefully but cannot predict an individual's outcome.
+- Risk groups describe groups, not individuals.
+
+## Run it yourself
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/OncoVision-METABRIC-Risk-Stratifier.git
-cd OncoVision-METABRIC-Risk-Stratifier
-
-# Create virtual environment
-python -m venv oncoenv
-source oncoenv/bin/activate  # Linux/Mac
-# oncoenv\Scripts\activate  # Windows
-
-# Install dependencies
-pip install -r requirements.txt
+pip install -r requirements-analysis.txt
+python run_analysis.py           # cleans the data, runs the benchmark, writes results/
+streamlit run streamlit_app.py   # the app trains its model on first start (about a minute)
 ```
 
-### Usage
+| File | Contents |
+|---|---|
+| `oncovision.py` | Cleaning, feature list, the four model pipelines |
+| `run_analysis.py` | Benchmark, risk groups, permutation importance, SHAP |
+| `streamlit_app.py` | The app |
+| `data/metabric_clean.csv` | Cleaned data (missing feature values left blank on purpose) |
+| `results/` | Every table and figure in this README |
 
-```bash
-# Run the Streamlit application
-streamlit run streamlit_app.py
+## References
 
-# Access the web interface at http://localhost:8501
-```
+1. Curtis C, et al. The genomic and transcriptomic architecture of 2,000 breast tumours. *Nature* 2012;486:346–352.
+2. Ishwaran H, et al. Random survival forests. *Annals of Applied Statistics* 2008;2(3):841–860.
+3. Pölsterl S. scikit-survival: a library for time-to-event analysis built on top of scikit-learn. *JMLR* 2020;21(212):1–6.
 
-### Data Processing Pipeline
-```mermaid
-graph TD
-    A[📦 Raw METABRIC Dataset<br/>n=2,509 patients, 34 features] --> B[🔍 Data Assessment];
-    
-    B --> C[❓ Missing Value Analysis];
-    C --> D[Initial: 10,000+ missing values];
-    
-    D --> E[🔄 Multi-Stage Imputation];
-    
-    subgraph E [Clinical Logic Imputation]
-        E1[1. Event & Duration Columns];
-        E2[2. Biomarker Status];
-        E3[3. Therapy Columns];
-        E4[4. Other Clinical Features];
-        E5[5. Final Fallback];
-        
-        E1 -->|Group by Cancer Type| E1a[Mode/Mean Imputation];
-        E2 -->|Measurement technique| E2a[Status Imputation];
-        E3 -->|Treatment protocols| E3a[Therapy Imputation];
-        E4 -->|Clinical grouping| E4a[Advanced Imputation];
-        E5 -->|Column-level| E5a[Final Cleanup];
-    end
-    
-    E --> F[✅ Clean Dataset<br/>0 missing values];
-    
-    F --> G[🔤 Feature Encoding];
-    G --> H[Categorical → Numerical];
-    
-    H --> I[🎯 Target Variable Creation];
-    I --> J[Structured Array:<br/>event, time];
-    
-    J --> K[⚖️ Train-Test Split];
-    K --> L[80% Training<br/>n=2,007 patients];
-    K --> M[20% Testing<br/>n=502 patients];
-    
-    L --> N[🤖 Model Training];
-    M --> O[📊 Model Evaluation];
-    
-    N --> P[Random Survival Forest];
-    N --> Q[Gradient Boosting];
-    N --> R[Cox Models];
-    
-    O --> S[🎯 Performance Metrics];
-    S --> T[C-index: 0.7045];
-    S --> U[Risk Stratification];
-    S --> V[Feature Importance];
-    
-    T --> W[🚀 Streamlit App];
-    U --> W;
-    V --> W;
-    
-    W --> X[🌐 Web Interface];
-    W --> Y[📱 Clinical Tool];
-    W --> Z[🔬 Research Platform];
+## License
 
-    %% Styling
-    classDef raw fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef process fill:#fff3e0,stroke:#ff6f00,stroke-width:2px;
-    classDef clean fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px;
-    classDef model fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
-    classDef result fill:#ffecb3,stroke:#ffa000,stroke-width:2px;
-    classDef final fill:#bbdefb,stroke:#1565c0,stroke-width:2px;
-    
-    class A raw;
-    class B,C,D,E process;
-    class F,G,H,I,J clean;
-    class K,L,M,N,O,P,Q,R model;
-    class S,T,U,V result;
-    class W,X,Y,Z final;
-```
-*From raw data to actionable insights*
-
-## 🏗️ Architecture
-
-```
-OncoVision/
-├── (not updated yet) data/
-│   ├── metabric_processed_clean.csv      # Cleaned dataset
-│   └── feature_importances.csv           # Feature importance scores
-├── (not updated yet) models/
-│   ├── best_model_random_forest.pkl      # Trained model
-│   └── label_encoders.pkl                # Preprocessing encoders
-├── (not updated yet) notebooks/
-│   ├── 01_data_preprocessing.ipynb       # Data cleaning & EDA
-│   ├── 02_model_training.ipynb           # Model development
-│   └── 03_results_analysis.ipynb         # Performance evaluation
-├── streamlit_app.py                      # Main application
-├── requirements.txt                      # Dependencies
-├── README.md                             # This file
-└── train_model.py                        #see details belo
-```
-## Model Weights
-
-The trained model file (`best_model_random_forest.pkl`) is not included in this repository due to its size (~770 MB).
-
-**To generate the model locally:**
-
-1.  Ensure you have all dependencies installed:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-2.  Run the training script. This will train the model and save the file locally.
-    ```bash
-    python train_model.py
-    ```
-    *Training takes approximately 5-10 minutes on a standard CPU.*
-
-3.  Once the model is trained, you can run the Streamlit app:
-    ```bash
-    streamlit run streamlit_app.py
-    ```
-
----
-## 🔬 Methodology
-
-### Data Source
-- **METABRIC Dataset**: 2,509 breast cancer patients with 34 clinical features
-- **Target Variables**: Overall survival status and duration
-- **Validation**: Stratified train-test split (80-20)
-
-### Machine Learning Approach
-- **Algorithm**: Random Survival Forest (best performer)
-- **Evaluation**: Concordance Index (C-index)
-- **Validation**: 5-fold cross-validation
-- **Interpretation**: Permutation importance analysis
-
-### Preprocessing
-<img width="1389" height="790" alt="image" src="https://github.com/user-attachments/assets/18d1b302-2d49-492b-81c2-f1a4b3bb8c68" />
-
-*Initial missing data patterns before imputation*
-
-```python
-# Advanced clinical imputation strategy
-df['Feature'] = df.groupby('Cancer_Type')['Feature'].transform(
-    lambda x: x.fillna(x.mode()[0] if not x.mode().empty else fallback_value)
-)
-```
-
-## 📈 Results Interpretation
-
-### Clinical Validation
-<img width="1389" height="989" alt="image" src="https://github.com/user-attachments/assets/b875efbf-40e2-4e9e-9bbe-6933812505dd" />
-*Alignment with established clinical knowledge*
-
-The model successfully recapitulates known prognostic factors:
-- ✅ Nottingham Prognostic Index (validated clinical tool)
-- ✅ Lymph node status (TNM staging component)  
-- ✅ Age at diagnosis (established risk factor)
-- ✅ Tumor size (TNM staging component)
-- ✅ ER/HER2 status (treatment decision drivers)
-
-### Model Insights
-<img width="1189" height="790" alt="image" src="https://github.com/user-attachments/assets/c2394c96-9c44-4b5d-b18f-bdda65b4a63f" />
-
-**High-Risk Group Identification**: The model successfully identified 168 patients with 87.5% event rate, representing those who may benefit from aggressive intervention
-
-
-## 🎯 Clinical Applications
-
-### Risk-Based Stratification
-<img width="1490" height="1189" alt="image" src="https://github.com/user-attachments/assets/bf2350e3-b7c7-4976-b63f-5a3eb0cfa891" />
-- Low Risk: Consider therapy de-escalation
-- Medium Risk: Standard guideline-concordant care  
-- High Risk: Aggressive multimodal therapy
-
-### Decision Support
-- Treatment planning and personalization
-- Resource allocation prioritization
-- Clinical trial enrollment guidance
-- Patient counseling and education
-
-## 📋 Example Usage
-<img width="1798" height="769" alt="image" src="https://github.com/user-attachments/assets/236c15f1-3b86-4709-8f38-1e08deabf409" />
-*Sample patient assessment with risk score*
-
-```python
-# Example risk prediction
-patient_data = {
-    'Age_at_Diagnosis': 58.5,
-    'Nottingham_index': 4.2, 
-    'Lymph_Nodes': 3,
-    'Tumor_Size': 28.0,
-    'Tumor_Stage': 2
-}
-
-risk_score = model.predict(patient_data)  # Returns: 0.723 (High Risk)
-```
-
-## 🔮 Future Enhancements
-
-- [ ] Integration with electronic health records
-- [ ] Real-time API for clinical systems
-- [ ] Additional validation on external datasets
-- [ ] Explainable AI features for clinical interpretability
-- [ ] Mobile application for point-of-care use
-
-## 📚 References
-
-1. Curtis, C., et al. (2012). The genomic and transcriptomic architecture of 2,000 breast tumours. *Nature*, 486(7403), 346-352.
-2. Ishwaran, H., et al. (2008). Random survival forests. *The Annals of Applied Statistics*, 2(3), 841-860.
-3. scikit-survival documentation. https://scikit-survival.readthedocs.io/
-
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
-
-## ⚠️ Disclaimer
-
-This tool is for **research and educational purposes only**. It does not replace clinical judgment. Always consult with qualified healthcare professionals for medical decisions.
+Apache 2.0. See [LICENSE](LICENSE).

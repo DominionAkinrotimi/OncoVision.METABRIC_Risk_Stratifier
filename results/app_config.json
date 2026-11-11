@@ -1,0 +1,11 @@
+{
+  "model": "Random Survival Forest",
+  "coxnet_alpha": 0.004522105797529554,
+  "risk_cutoffs": [
+    298.6500929919976,
+    522.8526629277009
+  ],
+  "train_patients": 1584,
+  "test_patients": 397,
+  "log_rank_p": 3.0070900800909382e-22
+}

@@ -1,0 +1,22 @@
+feature,mean_abs_shap
+Age at Diagnosis,70.0769
+Nottingham prognostic index,56.8047
+Lymph nodes examined positive,43.1396
+Tumor Size,40.3709
+Pam50 + Claudin-low subtype,24.2467
+Tumor Stage,19.4036
+Type of Breast Surgery,17.2877
+Inferred Menopausal State,14.3225
+Radio Therapy,10.1759
+Neoplasm Histologic Grade,9.0077
+PR Status,8.8546
+Primary Tumor Laterality,8.0943
+3-Gene classifier subtype,7.7688
+HER2 status measured by SNP6,7.308
+Mutation Count,6.2213
+Hormone Therapy,4.4185
+HER2 Status,4.0607
+ER Status,3.6476
+Chemotherapy,1.9723
+Cellularity,1.2383
+Cancer Type Detailed,1.1955
