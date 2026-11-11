@@ -2,6 +2,8 @@
 
 Survival models that sort breast cancer patients into low, medium and high risk of death, built on the METABRIC cohort, with a Streamlit app.
 
+**Live app:** https://metabric-risk-stratifier.streamlit.app/
+
 **Research prototype. Not a medical device and not for treatment decisions.**
 
 ## Results at a glance
